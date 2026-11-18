@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreditRisk AI Enterprise | Multi-Model Underwriting Suite</title>
+    <style>
+        :root {
+            --bg: #060a12;
+            --surface: #0d1424;
+            --card: #151f34;
+            --input: #080e1a;
+            --border: #23314d;
+            --primary: #6366f1;
+            --accent: #06b6d4;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 10% 8%, rgba(99, 102, 241, 0.14), transparent 38%),
+                radial-gradient(circle at 90% 90%, rgba(6, 182, 212, 0.10), transparent 38%);
+        }
+
+        /* Header & Tabs */
+        .topbar {
+            background: rgba(13, 20, 36, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .logo {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            display: grid; place-items: center; font-weight: 800; font-size: 15px; letter-spacing: 0.5px;
+        }
+        .brand h1 { font-size: 16px; font-weight: 700; }
+        .brand span { font-size: 11px; color: var(--muted); display: block; }
+
+        .nav-tabs { display: flex; gap: 6px; background: var(--input); padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
+        .tab-btn {
+            background: transparent; border: none; color: var(--muted);
+            padding: 7px 14px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
+            transition: all 0.15s;
+        }
+        .tab-btn.active { background: var(--primary); color: #fff; }
+        .tab-btn:hover:not(.active) { color: #fff; }
+
+        .status-pill {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35);
+            color: var(--success); padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 700;
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); }
+
+        .container { max-width: 1380px; margin: 22px auto; padding: 0 22px 40px; }
+        .tab-view { display: none; }
+        .tab-view.active { display: block; }
+
+        .main-grid { display: grid; grid-template-columns: 1.02fr 0.98fr; gap: 22px; }
+        @media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 22px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+        }
+        .panel-head {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 18px;
+            gap: 10px; flex-wrap: wrap;
+        }
+        .panel-head h2 { font-size: 15px; font-weight: 700; }
+        .panel-head p { font-size: 12px; color: var(--muted); }
+
+        .preset-group { display: flex; gap: 6px; flex-wrap: wrap; }
+        .preset-btn {
+            background: var(--card); border: 1px solid var(--border); color: var(--muted);
+            padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;
+        }
+        .preset-btn:hover { color: #fff; border-color: var(--accent); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .span-2 { grid-column: span 2; }
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .label-row { display: flex; justify-content: space-between; align-items: center; }
+        label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+        .tag-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+
+        input[type="number"], select {
+            width: 100%; padding: 10px 12px; background: var(--input);
+            border: 1px solid var(--border); border-radius: 8px; color: #fff;
+            font-size: 13px; font-weight: 600; outline: none;
+        }
+        input[type="number"]:focus, select:focus { border-color: var(--primary); }
+        input[type="range"] { width: 100%; accent-color: var(--primary); cursor: pointer; }
+
+        .btn-primary {
+            width: 100%; padding: 13px; margin-top: 6px;
+            background: linear-gradient(135deg, #4f46e5, #0891b2);
+            border: none; border-radius: 9px; color: #fff; font-size: 14px; font-weight: 700;
+            cursor: pointer; box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4);
+        }
+        .btn-primary:hover { filter: brightness(1.08); }
+
+        /* Verdict & Gauge Header */
+        .verdict-card {
+            display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center;
+            padding: 18px; border-radius: 12px; border: 1px solid var(--border); background: var(--card);
+            margin-bottom: 16px;
+        }
+        .verdict-card.approved { background: rgba(16, 185, 129, 0.11); border-color: var(--success); }
+        .verdict-card.rejected { background: rgba(239, 68, 68, 0.11); border-color: var(--danger); }
+        .verdict-sub { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 700; }
+        .verdict-main { font-size: 26px; font-weight: 800; margin: 2px 0 6px; }
+        .approved .verdict-main { color: #34d399; }
+        .rejected .verdict-main { color: #f87171; }
+        .grade-row { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+        .grade-pill { background: rgba(255,255,255,0.07); padding: 3px 9px; border-radius: 5px; color: #fff; font-weight: 600; }
+
+        /* 3-Model Vote Strip */
+        .votes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+        .vote-box { background: var(--input); border: 1px solid var(--border); border-radius: 9px; padding: 10px; text-align: center; }
+        .vote-box span { font-size: 10px; color: var(--muted); text-transform: uppercase; display: block; font-weight: 700; }
+        .vote-box strong { font-size: 16px; font-weight: 800; margin-top: 3px; display: block; }
+
+        /* KPIs & Donut */
+        .finance-row { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 14px; margin-bottom: 16px; }
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+        .kpi span { font-size: 11px; color: var(--muted); font-weight: 600; display: block; }
+        .kpi strong { font-size: 16px; font-weight: 800; margin-top: 3px; display: block; }
+
+        .donut-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .donut-legend { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+        /* FOIR Bar */
+        .foir-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+        .foir-head { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 7px; }
+        .bar-track { height: 8px; background: var(--input); border-radius: 99px; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0%; transition: width 0.45s ease; border-radius: 99px; }
+
+        /* XAI & Counter Offers */
+        .xai-box { background: var(--input); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+        .xai-box h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 9px; }
+        .xai-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+        .xai-item {
+            font-size: 12.5px; padding: 8px 10px; border-radius: 7px;
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
+        }
+        .xai-item.positive { background: rgba(16, 185, 129, 0.1); color: #a7f3d0; }
+        .xai-item.warning { background: rgba(245, 158, 11, 0.12); color: #fde68a; }
+        .xai-item.negative { background: rgba(239, 68, 68, 0.12); color: #fecaca; }
+        .impact-pill { font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: rgba(0,0,0,0.3); white-space: nowrap; }
+
+        .counter-box {
+            margin-top: 12px; padding: 12px; border-radius: 9px;
+            background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.35);
+            display: none;
+        }
+        .counter-box h4 { font-size: 12px; color: #a5b4fc; margin-bottom: 6px; }
+        .counter-box ul { padding-left: 18px; font-size: 12px; color: #e2e8f0; line-height: 1.6; }
+
+        /* Tables & Telemetry */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        th { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+        .feat-row { margin-bottom: 11px; }
+        .feat-top { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+        .action-bar { display: flex; gap: 10px; }
+        .btn-sec {
+            background: var(--card); border: 1px solid var(--border); color: #fff;
+            padding: 7px 13px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
+        }
+        .btn-sec:hover { border-color: var(--accent); }
+
+        @media print {
+            .topbar, .preset-group, .btn-primary, .nav-tabs, .action-bar { display: none !important; }
+            body { background: #fff; color: #000; }
+            .panel { border: 1px solid #ccc; box-shadow: none; background: #fff; color: #000; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="brand">
+        <div class="logo">CR</div>
+        <div>
+            <h1>CreditRisk AI Enterprise</h1>
+            <span>Multi-Model Ensemble Underwriting & XAI Platform</span>
+        </div>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('console', this)">Underwriting Console</button>
+        <button class="tab-btn" onclick="switchTab('amortization', this)">Amortization Schedule</button>
+        <button class="tab-btn" onclick="switchTab('telemetry', this)">ML Model Telemetry</button>
+        <button class="tab-btn" onclick="switchTab('audit', this)">Session Audit Log</button>
+    </div>
+
+    <div class="status-pill"><div class="dot"></div> 4-Model Ensemble Ready</div>
+</div>
+
+<div class="container">
+
+    <!-- TAB 1: UNDERWRITING CONSOLE -->
+    <div id="tab-console" class="tab-view active">
+        <div class="main-grid">
+            <!-- Left Input Panel -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Applicant Financial & Collateral Profile</h2>
+                        <p>Configure parameters or test banking scenarios</p>
+                    </div>
+                    <div class="preset-group">
+                        <button class="preset-btn" onclick="applyPreset('prime')">Prime AAA</button>
+                        <button class="preset-btn" onclick="applyPreset('highdebt')">Over-Leveraged</button>
+                        <button class="preset-btn" onclick="applyPreset('lowcibil')">Low CIBIL</button>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Applicant Monthly Income (₹)</label>
+                        <input type="number" id="ApplicantIncome" value="95000">
+                    </div>
+                    <div class="field">
+                        <label>Co-Applicant Income (₹)</label>
+                        <input type="number" id="CoapplicantIncome" value="30000">
+                    </div>
+                    <div class="field">
+                        <label>Existing Monthly EMIs (₹)</label>
+                        <input type="number" id="ExistingEMI" value="6000">
+                    </div>
+                    <div class="field">
+                        <label>Requested Loan Principal (₹)</label>
+                        <input type="number" id="LoanAmount" value="2200000">
+                    </div>
+                    <div class="field">
+                        <label>Repayment Tenure (Months)</label>
+                        <select id="TenureMonths">
+                            <option value="36">36 Months (3 Yrs)</option>
+                            <option value="60">60 Months (5 Yrs)</option>
+                            <option value="120">120 Months (10 Yrs)</option>
+                            <option value="180" selected>180 Months (15 Yrs)</option>
+                            <option value="240">240 Months (20 Yrs)</option>
+                            <option value="300">300 Months (25 Yrs)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Quoted Interest Rate (% p.a.)</label>
+                        <input type="number" step="0.05" id="InterestRate" value="9.15">
+                    </div>
+
+                    <div class="field span-2">
+                        <div class="label-row">
+                            <label>CIBIL Bureau Credit Score (300 – 900)</label>
+                            <span id="cibil-tag" class="tag-badge" style="background:rgba(16,185,129,0.2);color:#34d399;">790 • Prime</span>
+                        </div>
+                        <input type="range" id="CIBIL_Score" min="300" max="900" value="790" oninput="updateSliders()">
+                    </div>
+
+                    <div class="field span-2">
+                        <div class="label-row">
+                            <label>Loan-to-Value (LTV) Collateral Ratio (%)</label>
+                            <span id="ltv-tag" class="tag-badge" style="background:rgba(6,182,212,0.2);color:#67e8f9;">70% LTV</span>
+                        </div>
+                        <input type="range" id="LTV_Ratio" min="40" max="95" value="70" oninput="updateSliders()">
+                    </div>
+
+                    <div class="field">
+                        <label>Employment Category</label>
+                        <select id="EmploymentType">
+                            <option value="0" selected>Salaried (Govt / MNC)</option>
+                            <option value="1">Salaried (Private)</option>
+                            <option value="2">Self-Employed Professional</option>
+                            <option value="3">Business Owner</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Work / Business Tenure (Years)</label>
+                        <input type="number" id="YearsAtJob" value="5" min="0" max="40">
+                    </div>
+
+                    <div class="field span-2">
+                        <label>Collateral Property Zone</label>
+                        <select id="PropertyArea">
+                            <option value="2" selected>Urban Metro</option>
+                            <option value="1">Semi-Urban</option>
+                            <option value="0">Rural</option>
+                        </select>
+                    </div>
+
+                    <div class="span-2">
+                        <button class="btn-primary" onclick="runUnderwriting()">Run Multi-Model Credit Underwriting</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Analytics Output -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Ensemble Decision & XAI Audit</h2>
+                        <p>Real-time inference & risk-based pricing</p>
+                    </div>
+                    <button class="btn-sec" onclick="window.print()">Print Memo</button>
+                </div>
+
+                <!-- Verdict + SVG Risk Gauge -->
+                <div id="verdict-card" class="verdict-card">
+                    <div>
+                        <div class="verdict-sub">Meta-Ensemble Verdict</div>
+                        <div id="verdict-text" class="verdict-main">EVALUATING...</div>
+                        <div class="grade-row">
+                            <span class="grade-pill">Grade: <strong id="grade-val">--</strong></span>
+                            <span class="grade-pill">Rec. APR: <strong id="rec-rate-val">--</strong></span>
+                            <span class="grade-pill">Confidence: <strong id="conf-val">--</strong></span>
+                        </div>
+                    </div>
+                    <div style="text-align:center;">
+                        <svg width="96" height="60" viewBox="0 0 100 60">
+                            <path d="M 10 52 A 40 40 0 0 1 90 52" fill="none" stroke="#1e293b" stroke-width="10" stroke-linecap="round"/>
+                            <path id="gauge-arc" d="M 10 52 A 40 40 0 0 1 90 52" fill="none" stroke="#10b981" stroke-width="10" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="126"/>
+                            <text id="gauge-score" x="50" y="48" text-anchor="middle" fill="#fff" font-size="15" font-weight="800">0</text>
+                        </svg>
+                        <div style="font-size:10px;color:var(--muted);font-weight:700;">RISK SCORE / 1000</div>
+                    </div>
+                </div>
+
+                <!-- 4-Model Voting Breakdown -->
+                <div class="votes-grid">
+                    <div class="vote-box">
+                        <span>Meta-Ensemble</span>
+                        <strong id="vote-ens" style="color:#818cf8;">0%</strong>
+                    </div>
+                    <div class="vote-box">
+                        <span>Random Forest</span>
+                        <strong id="vote-rf">0%</strong>
+                    </div>
+                    <div class="vote-box">
+                        <span>Grad. Boosting</span>
+                        <strong id="vote-gb">0%</strong>
+                    </div>
+                    <div class="vote-box">
+                        <span>Logistic Reg.</span>
+                        <strong id="vote-lr">0%</strong>
+                    </div>
+                </div>
+
+                <!-- Financial KPIs + SVG Donut -->
+                <div class="finance-row">
+                    <div class="kpi-grid">
+                        <div class="kpi">
+                            <span>Monthly EMI</span>
+                            <strong id="emi-val">₹0</strong>
+                        </div>
+                        <div class="kpi">
+                            <span>Max Eligible Loan</span>
+                            <strong id="max-loan-val">₹0</strong>
+                        </div>
+                        <div class="kpi">
+                            <span>Total Interest</span>
+                            <strong id="int-val">₹0</strong>
+                        </div>
+                        <div class="kpi">
+                            <span>Total Payable</span>
+                            <strong id="pay-val">₹0</strong>
+                        </div>
+                    </div>
+
+                    <div class="donut-card">
+                        <svg width="74" height="74" viewBox="0 0 36 36">
+                            <circle cx="18" cy="18" r="14" fill="none" stroke="#f59e0b" stroke-width="5"></circle>
+                            <circle id="donut-principal" cx="18" cy="18" r="14" fill="none" stroke="#6366f1" stroke-width="5" stroke-dasharray="60 100" transform="rotate(-90 18 18)"></circle>
+                        </svg>
+                        <div class="donut-legend">
+                            <span style="color:#818cf8;">■ Principal</span> &nbsp;
+                            <span style="color:#fbbf24;">■ Interest</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOIR Progress -->
+                <div class="foir-card">
+                    <div class="foir-head">
+                        <span>FOIR / Debt-to-Income Ratio (Max Policy Cap: 55%)</span>
+                        <span id="foir-val">0.0%</span>
+                    </div>
+                    <div class="bar-track"><div id="foir-bar" class="bar-fill"></div></div>
+                </div>
+
+                <!-- XAI Drivers -->
+                <div class="xai-box">
+                    <h3>Explainable AI (XAI) Feature Attribution</h3>
+                    <ul id="xai-list" class="xai-list"></ul>
+
+                    <div id="counter-box" class="counter-box">
+                        <h4>Automated Counter-Offer & Restructuring Path</h4>
+                        <ul id="counter-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: AMORTIZATION SCHEDULE -->
+    <div id="tab-amortization" class="tab-view">
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Year-by-Year Loan Amortization Schedule</h2>
+                    <p>Reducing-balance principal vs. interest repayment trajectory</p>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Opening Principal</th>
+                        <th>Principal Repaid</th>
+                        <th>Interest Paid</th>
+                        <th>Closing Balance</th>
+                    </tr>
+                </thead>
+                <tbody id="amort-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 3: ML MODEL TELEMETRY -->
+    <div id="tab-telemetry" class="tab-view">
+        <div class="main-grid">
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Holdout Test Set Performance Benchmarks</h2>
+                        <p>Evaluated on 20% stratified test split (480 unseen profiles)</p>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Algorithm Architecture</th>
+                            <th>Test Accuracy</th>
+                            <th>F1-Score</th>
+                            <th>ROC-AUC</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bench-body"></tbody>
+                </table>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Global Gini Feature Importance</h2>
+                        <p>Relative predictive weight across Random Forest trees</p>
+                    </div>
+                </div>
+                <div id="feat-imp-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: SESSION AUDIT LOG -->
+    <div id="tab-audit" class="tab-view">
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Session Underwriting Audit Log</h2>
+                    <p>Complete history of evaluated applications in this session</p>
+                </div>
+                <div class="action-bar">
+                    <button class="btn-sec" onclick="exportAuditCSV()">Export CSV Report</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Case #</th>
+                        <th>Monthly Income</th>
+                        <th>Loan Requested</th>
+                        <th>CIBIL</th>
+                        <th>Risk Score</th>
+                        <th>FOIR %</th>
+                        <th>Ensemble Prob</th>
+                        <th>Verdict</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const API_URL = window.location.protocol === 'file:' ? 'http://127.0.0.1:5000/predict' : '/predict';
+let auditRecords = [];
+
+function fmtINR(n) {
+    return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    btn.classList.add('active');
+}
+
+function updateSliders() {
+    const cibil = Number(document.getElementById('CIBIL_Score').value);
+    const ltv = Number(document.getElementById('LTV_Ratio').value);
+
+    const cTag = document.getElementById('cibil-tag');
+    if (cibil >= 750) {
+        cTag.innerText = `${cibil} • Prime`;
+        cTag.style.background = 'rgba(16,185,129,0.2)'; cTag.style.color = '#34d399';
+    } else if (cibil >= 680) {
+        cTag.innerText = `${cibil} • Standard`;
+        cTag.style.background = 'rgba(245,158,11,0.2)'; cTag.style.color = '#fbbf24';
+    } else {
+        cTag.innerText = `${cibil} • Sub-Prime`;
+        cTag.style.background = 'rgba(239,68,68,0.2)'; cTag.style.color = '#f87171';
+    }
+
+    const lTag = document.getElementById('ltv-tag');
+    lTag.innerText = `${ltv}% LTV`;
+    lTag.style.color = ltv <= 80 ? '#67e8f9' : '#f87171';
+}
+
+function applyPreset(type) {
+    if (type === 'prime') {
+        document.getElementById('ApplicantIncome').value = 110000;
+        document.getElementById('CoapplicantIncome').value = 35000;
+        document.getElementById('ExistingEMI').value = 5000;
+        document.getElementById('LoanAmount').value = 2400000;
+        document.getElementById('TenureMonths').value = 180;
+        document.getElementById('CIBIL_Score').value = 815;
+        document.getElementById('LTV_Ratio').value = 65;
+        document.getElementById('YearsAtJob').value = 6;
+    } else if (type === 'highdebt') {
+        document.getElementById('ApplicantIncome').value = 48000;
+        document.getElementById('CoapplicantIncome').value = 0;
+        document.getElementById('ExistingEMI').value = 15000;
+        document.getElementById('LoanAmount').value = 3200000;
+        document.getElementById('TenureMonths').value = 120;
+        document.getElementById('CIBIL_Score').value = 745;
+        document.getElementById('LTV_Ratio').value = 78;
+        document.getElementById('YearsAtJob').value = 3;
+    } else if (type === 'lowcibil') {
+        document.getElementById('ApplicantIncome').value = 140000;
+        document.getElementById('CoapplicantIncome').value = 25000;
+        document.getElementById('ExistingEMI').value = 0;
+        document.getElementById('LoanAmount').value = 1800000;
+        document.getElementById('TenureMonths').value = 180;
+        document.getElementById('CIBIL_Score').value = 610;
+        document.getElementById('LTV_Ratio').value = 70;
+        document.getElementById('YearsAtJob').value = 4;
+    }
+    updateSliders();
+    runUnderwriting();
+}
+
+async function runUnderwriting() {
+    const payload = {
+        ApplicantIncome: Number(document.getElementById('ApplicantIncome').value),
+        CoapplicantIncome: Number(document.getElementById('CoapplicantIncome').value),
+        ExistingEMI: Number(document.getElementById('ExistingEMI').value),
+        LoanAmount: Number(document.getElementById('LoanAmount').value),
+        TenureMonths: Number(document.getElementById('TenureMonths').value),
+        InterestRate: Number(document.getElementById('InterestRate').value),
+        CIBIL_Score: Number(document.getElementById('CIBIL_Score').value),
+        EmploymentType: Number(document.getElementById('EmploymentType').value),
+        YearsAtJob: Number(document.getElementById('YearsAtJob').value),
+        PropertyArea: Number(document.getElementById('PropertyArea').value),
+        LTV_Ratio: Number(document.getElementById('LTV_Ratio').value)
+    };
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        // Verdict & Risk Gauge
+        const vCard = document.getElementById('verdict-card');
+        vCard.className = 'verdict-card ' + (data.status === 'APPROVED' ? 'approved' : 'rejected');
+        document.getElementById('verdict-text').innerText = 'LOAN ' + data.status;
+        document.getElementById('grade-val').innerText = data.credit_grade;
+        document.getElementById('rec-rate-val').innerText = data.recommended_rate + '%';
+        document.getElementById('conf-val').innerText = data.confidence + '%';
+
+        const arc = document.getElementById('gauge-arc');
+        const offset = 126 - (126 * (data.risk_score / 1000));
+        arc.style.strokeDashoffset = offset;
+        arc.style.stroke = data.risk_score >= 700 ? '#10b981' : (data.risk_score >= 550 ? '#f59e0b' : '#ef4444');
+        document.getElementById('gauge-score').textContent = data.risk_score;
+
+        // Model Votes
+        document.getElementById('vote-ens').innerText = data.model_votes.ensemble + '%';
+        document.getElementById('vote-rf').innerText = data.model_votes.random_forest + '%';
+        document.getElementById('vote-gb').innerText = data.model_votes.gradient_boosting + '%';
+        document.getElementById('vote-lr').innerText = data.model_votes.logistic_regression + '%';
+
+        // Financial KPIs & Donut
+        document.getElementById('emi-val').innerText = fmtINR(data.monthly_emi);
+        document.getElementById('max-loan-val').innerText = fmtINR(data.max_eligible_loan);
+        document.getElementById('int-val').innerText = fmtINR(data.total_interest);
+        document.getElementById('pay-val').innerText = fmtINR(data.total_payable);
+
+        const pRatio = data.total_payable > 0 ? (payload.LoanAmount / data.total_payable) * 88 : 50;
+        document.getElementById('donut-principal').setAttribute('stroke-dasharray', `${pRatio} 100`);
+
+        // FOIR Bar
+        document.getElementById('foir-val').innerText = data.foir + '%';
+        const fBar = document.getElementById('foir-bar');
+        fBar.style.width = Math.min(data.foir, 100) + '%';
+        fBar.style.background = data.foir <= 45 ? '#10b981' : (data.foir <= 55 ? '#f59e0b' : '#ef4444');
+
+        // XAI Drivers
+        const xList = document.getElementById('xai-list');
+        xList.innerHTML = '';
+        data.reasons.forEach(r => {
+            const li = document.createElement('li');
+            li.className = 'xai-item ' + r.type;
+            li.innerHTML = `<span>${r.text}</span><span class="impact-pill">${r.impact}</span>`;
+            xList.appendChild(li);
+        });
+
+        // Counter Offers
+        const cBox = document.getElementById('counter-box');
+        const cList = document.getElementById('counter-list');
+        if (data.counter_offers && data.counter_offers.length > 0) {
+            cBox.style.display = 'block';
+            cList.innerHTML = data.counter_offers.map(c => `<li>${c}</li>`).join('');
+        } else {
+            cBox.style.display = 'none';
+        }
+
+        // Populate Amortization Schedule
+        const aBody = document.getElementById('amort-body');
+        aBody.innerHTML = data.amortization.map(row => `
+            <tr>
+                <td>Year ${row.year}</td>
+                <td>${fmtINR(row.opening_balance)}</td>
+                <td style="color:#34d399;font-weight:600;">${fmtINR(row.principal_paid)}</td>
+                <td style="color:#fbbf24;">${fmtINR(row.interest_paid)}</td>
+                <td>${fmtINR(row.closing_balance)}</td>
+            </tr>
+        `).join('');
+
+        // Populate Telemetry Benchmarks & Feature Importance
+        const b = data.benchmarks;
+        document.getElementById('bench-body').innerHTML = `
+            <tr><td><strong>Soft-Voting Meta-Ensemble</strong></td><td><strong>${b.ensemble.accuracy}%</strong></td><td><strong>${b.ensemble.f1_score}%</strong></td><td><strong>${b.ensemble.roc_auc}</strong></td></tr>
+            <tr><td>Random Forest Classifier (35 Trees)</td><td>${b.random_forest.accuracy}%</td><td>${b.random_forest.f1_score}%</td><td>${b.random_forest.roc_auc}</td></tr>
+            <tr><td>Gradient Boosted Trees (GBDT)</td><td>${b.gradient_boosting.accuracy}%</td><td>${b.gradient_boosting.f1_score}%</td><td>${b.gradient_boosting.roc_auc}</td></tr>
+            <tr><td>L2 Logistic Regression</td><td>${b.logistic_regression.accuracy}%</td><td>${b.logistic_regression.f1_score}%</td><td>${b.logistic_regression.roc_auc}</td></tr>
+        `;
+
+        const maxImp = Math.max(...data.feature_importances.map(f => f.importance), 1);
+        document.getElementById('feat-imp-container').innerHTML = data.feature_importances.map(f => `
+            <div class="feat-row">
+                <div class="feat-top"><span>${f.feature}</span><strong>${f.importance}%</strong></div>
+                <div class="bar-track"><div class="bar-fill" style="width:${(f.importance / maxImp) * 100}%;background:#6366f1;"></div></div>
+            </div>
+        `).join('');
+
+        // Append to Audit Log
+        const totInc = payload.ApplicantIncome + payload.CoapplicantIncome;
+        auditRecords.unshift({
+            caseId: auditRecords.length + 1,
+            income: totInc,
+            loan: payload.LoanAmount,
+            cibil: payload.CIBIL_Score,
+            riskScore: data.risk_score,
+            foir: data.foir,
+            prob: data.model_votes.ensemble,
+            status: data.status
+        });
+
+        document.getElementById('audit-body').innerHTML = auditRecords.map(rec => `
+            <tr>
+                <td>#${rec.caseId}</td>
+                <td>${fmtINR(rec.income)}</td>
+                <td>${fmtINR(rec.loan)}</td>
+                <td>${rec.cibil}</td>
+                <td>${rec.riskScore} / 1000</td>
+                <td>${rec.foir}%</td>
+                <td>${rec.prob}%</td>
+                <td style="font-weight:800;color:${rec.status === 'APPROVED' ? '#34d399' : '#f87171'};">${rec.status}</td>
+            </tr>
+        `).join('');
+
+    } catch (err) {
+        alert('Backend server offline! Run python app.py in VS Code terminal.');
+    }
+}
+
+function exportAuditCSV() {
+    if (auditRecords.length === 0) return;
+    const headers = ['Case_ID,Total_Income,Requested_Loan,CIBIL,Risk_Score,FOIR_Percent,Ensemble_Prob,Verdict'];
+    const rows = auditRecords.map(r => `${r.caseId},${r.income},${r.loan},${r.cibil},${r.riskScore},${r.foir},${r.prob},${r.status}`);
+    const blob = new Blob([headers.concat(rows).join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'credit_underwriting_audit.csv';
+    a.click();
+}
+
+window.onload = () => {
+    updateSliders();
+    runUnderwriting();
+};
+</script>
+</body>
+</html>
